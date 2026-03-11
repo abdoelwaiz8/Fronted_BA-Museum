@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard — Museum Aceh</title>
+  <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;0,700;1,400&family=Source+Sans+3:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/sidebar.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+<div class="app-layout">
+
+  <!-- Sidebar Overlay for Mobile -->
+  <div class="sidebar-overlay"></div>
+
+  <!-- ── Sidebar ── -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="sidebar-logo-icon">🏛️</div>
+      <div class="sidebar-logo-text">
+        <span class="logo-main">MUSEUM ACEH</span>
+        <span class="logo-sub">Sistem Inventaris</span>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <span class="nav-section-label">Menu Utama</span>
+
+      <a href="dashboard.html" class="nav-item active">
+        <span class="nav-icon">📊</span>
+        <span class="nav-text">Dashboard</span>
+      </a>
+      <a href="koleksi.html" class="nav-item">
+        <span class="nav-icon">🏺</span>
+        <span class="nav-text">Data Koleksi</span>
+      </a>
+      <a href="berita-acara.html" class="nav-item">
+        <span class="nav-icon">📋</span>
+        <span class="nav-text">Cetak/Download BA</span>
+      </a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <p class="sidebar-footer-version">v2.1.0 — Museum Aceh</p>
+    </div>
+  </aside>
+
+  <!-- ── Main Content ── -->
+  <main class="main-content">
+
+    <!-- Topbar -->
+    <header class="topbar">
+      <div style="display:flex;align-items:center;gap:12px">
+        <button class="hamburger" id="hamburger-btn">
+          <span></span><span></span><span></span>
+        </button>
+        <div class="topbar-left">
+          <h1 class="page-title">Dashboard</h1>
+          <p class="page-subtitle">Berita Acara Museum Aceh</p>
+        </div>
+      </div>
+      <div class="topbar-right">
+        <div class="user-info">
+          <span id="user-name">Loading...</span>
+          <span id="user-role" class="badge-role">-</span>
+        </div>
+        <button onclick="logout()" class="btn-logout">🚪 Keluar</button>
+      </div>
+    </header>
+
+    <!-- Page Content -->
+    <div class="page-content">
+
+      <!-- ── A. Stat Cards ── -->
+      <div class="stat-cards">
+        <div class="stat-card">
+          <div class="stat-icon">🏺</div>
+          <div class="stat-info">
+            <div class="stat-value" id="stat-total">—</div>
+            <div class="stat-label">Total Koleksi</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">📋</div>
+          <div class="stat-info">
+            <div class="stat-value" id="stat-ba">—</div>
+            <div class="stat-label">Berita Acara</div>
+          </div>
+        </div>
+        <div class="stat-card" style="border-left-color:#16A34A">
+          <div class="stat-icon" style="background:#dcfce7">✅</div>
+          <div class="stat-info">
+            <div class="stat-value" id="stat-baik">—</div>
+            <div class="stat-label">Kondisi Baik</div>
+          </div>
+        </div>
+        <div class="stat-card" style="border-left-color:#CA8A04">
+          <div class="stat-icon" style="background:#fef9c3">⚠️</div>
+          <div class="stat-info">
+            <div class="stat-value" id="stat-perhatian">—</div>
+            <div class="stat-label">Perlu Perhatian</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── B. Grafik ── -->
+      <div class="grid-2" style="margin-bottom:24px">
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">🍩 Sebaran Kondisi Koleksi</h3>
+          </div>
+          <div class="card-body">
+            <div style="height:260px;position:relative">
+              <canvas id="chart-kondisi"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">📊 Koleksi per Jenis</h3>
+          </div>
+          <div class="card-body">
+            <div style="height:260px;position:relative">
+              <canvas id="chart-jenis"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── C. BA Terbaru + D. Aktivitas ── -->
+      <div class="grid-2">
+
+        <!-- BA Terbaru -->
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">📋 Berita Acara Terbaru</h3>
+            <a href="berita-acara.html" class="btn btn-primary btn-sm">+ Buat BA Baru</a>
+          </div>
+          <div class="table-wrapper">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>No. Surat</th>
+                  <th>Jenis BA</th>
+                  <th>Tanggal</th>
+                  <th>Pihak Pertama</th>
+                  <th>Pihak Kedua</th>
+                  <th>Aksi</th>
+                </tr>
+              </thead>
+              <tbody id="tbody-ba">
+                <tr><td colspan="6" class="table-empty"><div class="empty-text">Memuat...</div></td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div style="padding:12px 20px;border-top:1px solid var(--abu-border)">
+            <a href="berita-acara.html" class="text-muted text-sm" style="text-decoration:none">
+              Lihat semua berita acara →
+            </a>
+          </div>
+        </div>
+
+        <!-- Aktivitas Terbaru -->
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">🕐 Aktivitas Terbaru</h3>
+          </div>
+          <div class="card-body">
+            <div id="aktivitas-feed" style="min-height:200px">
+              <div class="skeleton skeleton-text w-100" style="margin-bottom:12px"></div>
+              <div class="skeleton skeleton-text w-75" style="margin-bottom:12px"></div>
+              <div class="skeleton skeleton-text w-100" style="margin-bottom:12px"></div>
+              <div class="skeleton skeleton-text w-50" style="margin-bottom:12px"></div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+    <!-- end page-content -->
+
+  </main>
+</div>
+
+<script src="js/api.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/dashboard.js"></script>
+</body>
+</html>

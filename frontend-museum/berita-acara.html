@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Berita Acara — Museum Aceh</title>
+  <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;0,700;1,400&family=Source+Sans+3:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/sidebar.css">
+  <style>
+    .ba-layout {
+      display: grid;
+      grid-template-columns: 440px 1fr;
+      gap: 24px;
+      align-items: start;
+    }
+    @media (max-width: 1100px) { .ba-layout { grid-template-columns: 1fr; } }
+
+    .form-section-title {
+      font-size: 11px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.8px; color: var(--teks-sekunder);
+      padding: 10px 0 6px; border-bottom: 1px solid var(--abu-border); margin-bottom: 12px;
+    }
+    .switch { position: relative; width: 40px; height: 22px; flex-shrink: 0; }
+    .switch input { display: none; }
+    .switch-track {
+      position: absolute; inset: 0; background: #CBD5E1;
+      border-radius: 99px; cursor: pointer; transition: background 0.2s;
+    }
+    .switch-track::after {
+      content: ''; position: absolute; width: 16px; height: 16px;
+      background: white; border-radius: 50%; top: 3px; left: 3px;
+      transition: transform 0.2s; box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+    }
+    .switch input:checked + .switch-track { background: var(--merah-utama); }
+    .switch input:checked + .switch-track::after { transform: translateX(18px); }
+    .ext-toggle-row { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+    .ext-toggle-row label.switch-label { font-size: 12px; color: var(--teks-sekunder); cursor: pointer; }
+
+    .field-eksternal {
+      background: #FFF5F5; border: 1px dashed #FCA5A5;
+      border-radius: 8px; padding: 10px 12px; margin-top: 6px;
+    }
+    .field-eksternal .form-label { color: var(--merah-utama); font-size: 12px; }
+    .field-eksternal .form-group { margin-bottom: 8px; }
+    .field-eksternal .form-group:last-child { margin-bottom: 0; }
+
+    .item-count-badge {
+      background: var(--merah-utama); color: white;
+      border-radius: 99px; padding: 1px 8px; font-size: 12px; font-weight: 700;
+    }
+    .lokasi-global-box {
+      background: #F0FDF4; border: 1px solid #86EFAC;
+      border-radius: 8px; padding: 10px 12px; margin-bottom: 12px;
+    }
+    .lokasi-global-box .form-label { color: #166534; font-size: 12px; }
+
+    .item-row-grid {
+      display: grid; grid-template-columns: 1fr auto;
+      gap: 8px; padding: 8px 10px;
+      border-bottom: 1px solid var(--abu-border); align-items: start;
+    }
+    .item-row-grid:last-child { border-bottom: none; }
+    .item-nama { font-weight: 700; font-size: 13px; }
+    .item-inv  { font-size: 11px; color: var(--teks-sekunder); margin-top: 2px; }
+    .kondisi-split { display: grid; grid-template-columns: 140px 1fr; gap: 6px; align-items: start; margin-top: 6px; }
+    .kondisi-detail-input {
+      font-size: 12px; padding: 5px 8px; border: 1.5px solid var(--abu-input);
+      border-radius: 6px; width: 100%; outline: none; display: none; transition: border-color 0.2s;
+    }
+    .kondisi-detail-input:focus { border-color: var(--merah-utama); }
+    .kondisi-detail-input.visible { display: block; }
+    .btn-hapus-item {
+      background: none; border: none; color: #DC2626;
+      font-size: 18px; cursor: pointer; padding: 0 2px; line-height: 1;
+    }
+    .btn-hapus-item:hover { color: #991B1B; }
+    .lampiran-section { display: none; }
+    .ba-form-scroll { max-height: calc(100vh - 180px); overflow-y: auto; padding-right: 4px; }
+    .ba-form-scroll::-webkit-scrollbar { width: 4px; }
+    .ba-form-scroll::-webkit-scrollbar-thumb { background: var(--abu-border); border-radius: 2px; }
+    .empty-items { text-align: center; padding: 20px 10px; color: var(--teks-sekunder); font-size: 13px; }
+  </style>
+</head>
+<body>
+<div class="app-layout">
+  <div class="sidebar-overlay"></div>
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="sidebar-logo-icon">🏛️</div>
+      <div class="sidebar-logo-text">
+        <span class="logo-main">MUSEUM ACEH</span>
+        <span class="logo-sub">Sistem Inventaris</span>
+      </div>
+    </div>
+    <nav class="sidebar-nav">
+      <span class="nav-section-label">Menu Utama</span>
+      <a href="dashboard.html" class="nav-item"><span class="nav-icon">📊</span><span class="nav-text">Dashboard</span></a>
+      <a href="koleksi.html" class="nav-item"><span class="nav-icon">🏺</span><span class="nav-text">Input Koleksi</span></a>
+      <a href="berita-acara.html" class="nav-item active"><span class="nav-icon">📋</span><span class="nav-text">Cetak/Download BA</span></a>
+    </nav>
+    <div class="sidebar-footer"><p class="sidebar-footer-version">v2.3.0 — Museum Aceh</p></div>
+  </aside>
+
+  <main class="main-content">
+    <header class="topbar">
+      <div style="display:flex;align-items:center;gap:12px">
+        <button class="hamburger" id="hamburger-btn"><span></span><span></span><span></span></button>
+        <div class="topbar-left">
+          <h1 class="page-title">Berita Acara</h1>
+          <p class="page-subtitle">Cetak & Download Berita Acara Museum Aceh</p>
+        </div>
+      </div>
+      <div class="topbar-right">
+        <div class="user-info">
+          <span id="user-name">Loading...</span>
+          <span id="user-role" class="badge-role">-</span>
+        </div>
+        <button onclick="logout()" class="btn-logout">🚪 Keluar</button>
+      </div>
+    </header>
+
+    <div class="page-content">
+      <div class="ba-layout">
+
+        <!-- PANEL KIRI -->
+        <div class="card" style="position:sticky;top:84px">
+          <div class="card-header">
+            <h3 class="card-title">✏️ Buat Berita Acara Baru</h3>
+          </div>
+          <div class="card-body ba-form-scroll">
+            <form id="form-ba" novalidate>
+
+              <div class="form-group">
+                <label class="form-label" for="nomor_surat">Nomor Surat <span class="required">*</span></label>
+                <input type="text" id="nomor_surat" class="form-control" placeholder="Contoh: 02/PENG/II/2026" required>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="jenis_ba">Jenis BA <span class="required">*</span></label>
+                <select id="jenis_ba" class="form-control" required>
+                  <option value="">Pilih Jenis BA...</option>
+                  <option value="Pengembalian">Pengembalian</option>
+                  <option value="Peminjaman">Peminjaman</option>
+                  <option value="Serah Terima">Serah Terima</option>
+                  <option value="Pengiriman">Pengiriman</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="tanggal_serah_terima">Tanggal Serah Terima <span class="required">*</span></label>
+                <input type="date" id="tanggal_serah_terima" class="form-control" required>
+              </div>
+
+              <div class="form-section-title">👥 Pihak-Pihak</div>
+
+              <!-- Pihak Pertama -->
+              <div class="form-group">
+                <label class="form-label" for="pihak_pertama_id">Pihak Pertama (Internal) <span class="required">*</span></label>
+                <select id="pihak_pertama_id" class="form-control" required>
+                  <option value="">— Pilih Staff —</option>
+                </select>
+              </div>
+
+              <!-- Pihak Kedua -->
+              <div class="form-group">
+                <label class="form-label">Pihak Kedua <span class="required">*</span></label>
+                <div class="ext-toggle-row">
+                  <label class="switch"><input type="checkbox" id="toggle-p2-ext"><span class="switch-track"></span></label>
+                  <span class="ext-toggle-row label switch-label">Pihak dari luar museum? (Eksternal)</span>
+                </div>
+                <div id="p2-internal">
+                  <select id="pihak_kedua_id" class="form-control"><option value="">— Pilih Staff —</option></select>
+                </div>
+                <div id="p2-external" class="field-eksternal" style="display:none">
+                  <div class="form-group">
+                    <label class="form-label">Nama Lengkap <span class="required">*</span></label>
+                    <input type="text" id="p2_ext_nama" class="form-control" placeholder="Nama pihak kedua...">
+                  </div>
+                  <div class="form-row" style="grid-template-columns:1fr 1fr;gap:8px">
+                    <div class="form-group">
+                      <label class="form-label">NIP <span style="font-weight:400;color:var(--teks-sekunder)">(opsional)</span></label>
+                      <input type="text" id="p2_ext_nip" class="form-control" placeholder="NIP / ID...">
+                    </div>
+                    <div class="form-group">
+                      <label class="form-label">Jabatan / Instansi <span class="required">*</span></label>
+                      <input type="text" id="p2_ext_jabatan" class="form-control" placeholder="Jabatan / Instansi...">
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Alamat <span class="required">*</span></label>
+                    <input type="text" id="p2_ext_alamat" class="form-control" placeholder="Alamat instansi / kantor...">
+                  </div>
+                </div>
+              </div>
+
+              <!-- Saksi 1 -->
+              <div class="form-group">
+                <label class="form-label" for="saksi1_id">Saksi 1 (Internal)</label>
+                <select id="saksi1_id" class="form-control">
+                  <option value="">— Pilih Saksi (Opsional) —</option>
+                </select>
+              </div>
+
+              <!-- Saksi 2 -->
+              <div class="form-group">
+                <label class="form-label">Saksi 2</label>
+                <div class="ext-toggle-row">
+                  <label class="switch"><input type="checkbox" id="toggle-s2-ext"><span class="switch-track"></span></label>
+                  <span class="switch-label">Saksi dari luar museum? (Eksternal)</span>
+                </div>
+                <div id="s2-internal">
+                  <select id="saksi2_id" class="form-control"><option value="">— Pilih Saksi (Opsional) —</option></select>
+                </div>
+                <div id="s2-external" class="field-eksternal" style="display:none">
+                  <div class="form-group">
+                    <label class="form-label">Nama Lengkap</label>
+                    <input type="text" id="s2_ext_nama" class="form-control" placeholder="Nama saksi kedua...">
+                  </div>
+                  <div class="form-row" style="grid-template-columns:1fr 1fr;gap:8px">
+                    <div class="form-group">
+                      <label class="form-label">NIP <span style="font-weight:400;color:var(--teks-sekunder)">(opsional)</span></label>
+                      <input type="text" id="s2_ext_nip" class="form-control" placeholder="NIP / ID...">
+                    </div>
+                    <div class="form-group">
+                      <label class="form-label">Jabatan / Instansi</label>
+                      <input type="text" id="s2_ext_jabatan" class="form-control" placeholder="Jabatan / Instansi...">
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- DAFTAR KOLEKSI -->
+              <div class="form-section-title">
+                <div style="display:flex;align-items:center;justify-content:space-between">
+                  <span>📦 Daftar Koleksi</span>
+                  <span class="item-count-badge" id="item-count">0</span>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <div class="ext-toggle-row">
+                  <label class="switch"><input type="checkbox" id="toggle-lampiran"><span class="switch-track"></span></label>
+                  <span class="switch-label">Aktifkan Lampiran Koleksi</span>
+                </div>
+              </div>
+
+              <div id="lampiran-section" class="lampiran-section">
+                <div class="lokasi-global-box">
+                  <label class="form-label" for="lokasi_tujuan_global">
+                    📍 Lokasi / Tujuan Koleksi
+                    <span style="font-weight:400;color:#166534">(berlaku untuk semua koleksi)</span>
+                  </label>
+                  <input type="text" id="lokasi_tujuan_global" class="form-control"
+                    placeholder="Contoh: Ruang Penyimpanan Lt. 2..." style="margin-top:4px">
+                </div>
+                <button type="button" class="btn btn-secondary btn-full" id="btn-tambah-koleksi" style="margin-bottom:10px">
+                  + Tambah Koleksi ke BA
+                </button>
+                <div id="selected-items-list" style="border:1px solid var(--abu-border);border-radius:8px;overflow:hidden">
+                  <div class="empty-items"><div style="font-size:28px;margin-bottom:6px">📦</div>Belum ada koleksi dipilih</div>
+                </div>
+              </div>
+
+              <button type="submit" class="btn btn-primary btn-full" id="btn-cetak" style="margin-top:14px">
+                🖨️ Buat & Cetak PDF
+              </button>
+            </form>
+          </div>
+        </div>
+
+        <!-- PANEL KANAN -->
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">📋 Berita Acara Tersimpan</h3>
+            <button onclick="loadBeritaAcaraList()" class="btn btn-ghost btn-sm">🔄 Refresh</button>
+          </div>
+          <div class="table-wrapper">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>No. Surat</th><th>Jenis BA</th><th>Tanggal</th><th>Pihak Pertama</th><th>Aksi</th>
+                </tr>
+              </thead>
+              <tbody id="tbody-ba-list">
+                <tr><td colspan="5" class="table-empty"><div class="empty-text">Memuat data...</div></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="js/api.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/berita-acara.js"></script>
+</body>
+</html>

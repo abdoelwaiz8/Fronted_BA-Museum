@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Input Koleksi — Museum Aceh</title>
+  <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;0,700;1,400&family=Source+Sans+3:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/sidebar.css">
+</head>
+<body>
+<div class="app-layout">
+  <div class="sidebar-overlay"></div>
+
+  <!-- ── Sidebar ── -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="sidebar-logo-icon">🏛️</div>
+      <div class="sidebar-logo-text">
+        <span class="logo-main">MUSEUM ACEH</span>
+        <span class="logo-sub">Sistem Inventaris</span>
+      </div>
+    </div>
+    <nav class="sidebar-nav">
+      <span class="nav-section-label">Menu Utama</span>
+      <a href="dashboard.html" class="nav-item">
+        <span class="nav-icon">📊</span><span class="nav-text">Dashboard</span>
+      </a>
+      <a href="koleksi.html" class="nav-item active">
+        <span class="nav-icon">🏺</span><span class="nav-text">Input Koleksi</span>
+      </a>
+      <a href="berita-acara.html" class="nav-item">
+        <span class="nav-icon">📋</span><span class="nav-text">Cetak/Download BA</span>
+      </a>
+    </nav>
+    <div class="sidebar-footer">
+      <p class="sidebar-footer-version">v2.1.0 — Museum Aceh</p>
+    </div>
+  </aside>
+
+  <!-- ── Main Content ── -->
+  <main class="main-content">
+    <header class="topbar">
+      <div style="display:flex;align-items:center;gap:12px">
+        <button class="hamburger" id="hamburger-btn">
+          <span></span><span></span><span></span>
+        </button>
+        <div class="topbar-left">
+          <h1 class="page-title">Manajemen Koleksi</h1>
+          <p class="page-subtitle">Berita Acara Museum Aceh</p>
+        </div>
+      </div>
+      <div class="topbar-right">
+        <div class="user-info">
+          <span id="user-name">Loading...</span>
+          <span id="user-role" class="badge-role">-</span>
+        </div>
+        <button onclick="logout()" class="btn-logout">🚪 Keluar</button>
+      </div>
+    </header>
+
+    <div class="page-content">
+
+      <!-- Section header -->
+      <div class="section-header">
+        <div>
+          <h2 class="section-title">🏺 Data Koleksi</h2>
+          <p class="text-muted text-sm">Kelola seluruh koleksi Museum Aceh</p>
+        </div>
+        <a href="input-koleksi.html" class="btn btn-primary">
+          + Tambah Koleksi
+        </a>
+      </div>
+
+      <!-- ── Filter Panel ── -->
+      <div class="filter-panel">
+        <div class="filter-row">
+          <!-- Search -->
+          <div class="filter-group filter-search">
+            <label class="filter-label">🔍 Cari Koleksi</label>
+            <div class="input-wrapper">
+              <span class="input-icon" style="font-size:14px">🔍</span>
+              <input
+                type="text"
+                id="filter-q"
+                class="filter-control"
+                placeholder="Cari nama koleksi..."
+                style="padding-left:34px"
+              >
+            </div>
+          </div>
+
+          <!-- Kondisi -->
+          <div class="filter-group" style="min-width:160px">
+            <label class="filter-label">Kondisi</label>
+            <select id="filter-kondisi" class="filter-control">
+              <option value="">Semua Kondisi</option>
+              <option value="Baik">Baik</option>
+              <option value="Rusak Ringan">Rusak Ringan</option>
+              <option value="Rusak Berat">Rusak Berat</option>
+            </select>
+          </div>
+
+          <!-- Jenis Koleksi -->
+          <div class="filter-group" style="min-width:180px">
+            <label class="filter-label">Jenis Koleksi</label>
+            <select id="filter-jenis" class="filter-control">
+              <option value="">Semua Jenis</option>
+            </select>
+          </div>
+
+          <!-- Lokasi -->
+          <div class="filter-group" style="min-width:150px">
+            <label class="filter-label">Lokasi</label>
+            <input type="text" id="filter-lokasi" class="filter-control" placeholder="Filter lokasi...">
+          </div>
+        </div>
+
+        <!-- Row 2: Sort & controls -->
+        <div class="filter-row" style="margin-top:12px;align-items:center">
+          <div class="filter-group" style="min-width:180px">
+            <label class="filter-label">Urutkan berdasarkan</label>
+            <select id="filter-sort-by" class="filter-control">
+              <option value="no_inventaris">No. Inventaris</option>
+              <option value="nama_koleksi">Nama Koleksi</option>
+              <option value="jenis_koleksi">Jenis Koleksi</option>
+              <option value="kondisi_terkini">Kondisi</option>
+              <option value="created_at">Tanggal Tambah</option>
+            </select>
+          </div>
+
+          <div class="filter-group" style="min-width:120px">
+            <label class="filter-label">Urutan</label>
+            <select id="filter-sort-order" class="filter-control">
+              <option value="asc">A → Z</option>
+              <option value="desc">Z → A</option>
+            </select>
+          </div>
+
+          <div class="filter-group" style="min-width:110px">
+            <label class="filter-label">Data per halaman</label>
+            <select id="filter-limit" class="filter-control">
+              <option value="10">10</option>
+              <option value="20" selected>20</option>
+              <option value="50">50</option>
+              <option value="100">100</option>
+            </select>
+          </div>
+
+          <div style="display:flex;align-items:flex-end;gap:10px;padding-bottom:0;margin-top:auto">
+            <span class="badge badge-filter" id="filter-badge" style="display:none"></span>
+            <button id="btn-reset-filter" class="btn btn-ghost btn-sm">✕ Reset Filter</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Tabel Koleksi ── -->
+      <div class="card">
+        <div class="table-wrapper">
+          <table class="table">
+            <thead>
+              <tr>
+                <th style="width:48px">No</th>
+                <th>No. Inventaris</th>
+                <th>Nama Koleksi</th>
+                <th>Jenis</th>
+                <th>Kondisi</th>
+                <th>Lokasi</th>
+                <th style="width:120px">Aksi</th>
+              </tr>
+            </thead>
+            <tbody id="tbody-koleksi">
+              <tr><td colspan="7" class="table-empty"><div class="empty-text">Memuat data...</div></td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Pagination -->
+        <div class="pagination">
+          <div class="pagination-info" id="pagination-info">—</div>
+          <div class="pagination-controls" id="pagination-controls"></div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<script src="js/api.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/koleksi.js"></script>
+</body>
+</html>

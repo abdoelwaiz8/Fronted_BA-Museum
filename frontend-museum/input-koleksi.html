@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Input Koleksi — Museum Aceh</title>
+  <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;0,700;1,400&family=Source+Sans+3:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/sidebar.css">
+</head>
+<body>
+<div class="app-layout">
+  <div class="sidebar-overlay"></div>
+
+  <!-- ── Sidebar ── -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="sidebar-logo-icon">🏛️</div>
+      <div class="sidebar-logo-text">
+        <span class="logo-main">MUSEUM ACEH</span>
+        <span class="logo-sub">Sistem Inventaris</span>
+      </div>
+    </div>
+    <nav class="sidebar-nav">
+      <span class="nav-section-label">Menu Utama</span>
+      <a href="dashboard.html" class="nav-item">
+        <span class="nav-icon">📊</span><span class="nav-text">Dashboard</span>
+      </a>
+      <a href="koleksi.html" class="nav-item active">
+        <span class="nav-icon">🏺</span><span class="nav-text">Input Koleksi</span>
+      </a>
+      <a href="berita-acara.html" class="nav-item">
+        <span class="nav-icon">📋</span><span class="nav-text">Cetak/Download BA</span>
+      </a>
+    </nav>
+    <div class="sidebar-footer">
+      <p class="sidebar-footer-version">v2.1.0 — Museum Aceh</p>
+    </div>
+  </aside>
+
+  <!-- ── Main Content ── -->
+  <main class="main-content">
+    <header class="topbar">
+      <div style="display:flex;align-items:center;gap:12px">
+        <button class="hamburger" id="hamburger-btn">
+          <span></span><span></span><span></span>
+        </button>
+        <div class="topbar-left">
+          <h1 class="page-title">Tambah Koleksi</h1>
+          <p class="page-subtitle" id="breadcrumb">
+            <a href="koleksi.html" style="color:var(--teks-sekunder);text-decoration:none">Koleksi</a>
+            <span style="color:var(--teks-sekunder)"> / Tambah Koleksi Baru</span>
+          </p>
+        </div>
+      </div>
+      <div class="topbar-right">
+        <div class="user-info">
+          <span id="user-name">Loading...</span>
+          <span id="user-role" class="badge-role">-</span>
+        </div>
+        <button onclick="logout()" class="btn-logout">🚪 Keluar</button>
+      </div>
+    </header>
+
+    <div class="page-content">
+      <div style="max-width:680px;margin:0 auto">
+
+        <!-- Edit info banner -->
+        <div id="edit-info" class="alert alert-info" style="display:none;margin-bottom:20px"></div>
+
+        <div class="card" id="form-card">
+          <div class="card-header">
+            <h2 class="card-title" id="form-title">🏺 Registrasi Koleksi Baru</h2>
+          </div>
+          <div class="card-body">
+            <form id="form-koleksi" novalidate>
+
+              <!-- Nama Koleksi -->
+              <div class="form-group">
+                <label class="form-label" for="nama_koleksi">
+                  Nama Koleksi <span class="required">*</span>
+                </label>
+                <input
+                  type="text"
+                  id="nama_koleksi"
+                  class="form-control"
+                  placeholder="Contoh: Baju Sekulat Pria Alas"
+                  required
+                >
+                <div class="form-error" id="err-nama_koleksi" style="display:none">
+                  <span>⚠️</span> <span></span>
+                </div>
+              </div>
+
+              <!-- Row: No Inventaris + Jenis Koleksi -->
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label" for="no_inventaris">
+                    No. Inventaris <span class="required">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    id="no_inventaris"
+                    class="form-control"
+                    placeholder="Contoh: 03.00243.00"
+                    required
+                  >
+                  <div class="form-error" id="err-no_inventaris" style="display:none">
+                    <span>⚠️</span> <span></span>
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label" for="jenis_koleksi">Jenis Koleksi</label>
+                  <input
+                    type="text"
+                    id="jenis_koleksi"
+                    class="form-control"
+                    placeholder="Contoh: Etnografika"
+                    list="jenis-options"
+                  >
+                  <datalist id="jenis-options">
+                    <option value="Etnografika">
+                    <option value="Arkeologika">
+                    <option value="Historika">
+                    <option value="Numismatika & Heraldika">
+                    <option value="Filologika">
+                    <option value="Keramologika">
+                    <option value="Seni Rupa">
+                    <option value="Biologika">
+                    <option value="Geologika">
+                    <option value="Teknologika">
+                  </datalist>
+                </div>
+              </div>
+
+              <!-- Row: Kondisi + Lokasi -->
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label" for="kondisi_terkini">
+                    Kondisi <span class="required">*</span>
+                  </label>
+                  <select id="kondisi_terkini" class="form-control" required>
+                    <option value="">Pilih kondisi...</option>
+                    <option value="Baik">Baik</option>
+                    <option value="Rusak Ringan">Rusak Ringan</option>
+                    <option value="Rusak Berat">Rusak Berat</option>
+                  </select>
+                  <div class="form-error" id="err-kondisi_terkini" style="display:none">
+                    <span>⚠️</span> <span></span>
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label" for="lokasi_terkini">Lokasi Terkini</label>
+                  <input
+                    type="text"
+                    id="lokasi_terkini"
+                    class="form-control"
+                    placeholder="Contoh: Ruang Penyimpanan"
+                  >
+                </div>
+              </div>
+
+              <!-- Divider -->
+              <div class="divider"></div>
+
+              <!-- Action Buttons -->
+              <div style="display:flex;gap:12px;justify-content:flex-end">
+                <a href="koleksi.html" class="btn btn-secondary">← Batal</a>
+                <button type="submit" class="btn btn-primary" id="btn-submit">
+                  Tambah Koleksi ▶
+                </button>
+              </div>
+
+            </form>
+          </div>
+        </div>
+
+        <!-- Tips card -->
+        <div class="card" style="margin-top:16px;border-left:4px solid #3B82F6">
+          <div class="card-body" style="padding:14px 18px">
+            <p class="text-sm" style="color:#1e40af;font-weight:600;margin-bottom:6px">💡 Panduan Pengisian</p>
+            <ul style="font-size:13px;color:var(--teks-sekunder);padding-left:16px;list-style:disc">
+              <li>Nomor inventaris harus unik dan belum terdaftar.</li>
+              <li>Format nomor inventaris: XX.XXXXX.XX (contoh: 03.00243.00)</li>
+              <li>Jenis koleksi mengikuti klasifikasi resmi Museum Aceh.</li>
+              <li>Field bertanda <span style="color:var(--merah-utama)">*</span> wajib diisi.</li>
+            </ul>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="js/api.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/input-koleksi.js"></script>
+</body>
+</html>
