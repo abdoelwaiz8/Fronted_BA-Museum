@@ -1,8 +1,4 @@
-/* ============================================================
-   Museum Aceh — api.js  (FIXED)
-   ============================================================ */
-
-const BASE_URL = 'http://localhost:5000/api';
+const BASE_URL = 'https://leadier-angelic-unorational.ngrok-free.dev/api';
 
 function getToken() {
   return localStorage.getItem('token');
@@ -14,6 +10,7 @@ async function apiFetch(endpoint, options = {}) {
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${getToken()}`,
+        'ngrok-skip-browser-warning': 'true', 
         ...options.headers,
       },
       ...options,
@@ -35,9 +32,11 @@ async function apiFetch(endpoint, options = {}) {
 async function downloadPDF(id, nomorSurat) {
   try {
     const res = await fetch(`${BASE_URL}/berita-acara/${id}/pdf`, {
-      headers: { 'Authorization': `Bearer ${getToken()}` }
+      headers: { 
+        'Authorization': `Bearer ${getToken()}`,
+        'ngrok-skip-browser-warning': 'true' 
+      }
     });
-
     if (!res.ok) throw new Error(`Server mengembalikan status ${res.status}`);
 
     const blob = await res.blob();
