@@ -193,12 +193,14 @@ async function loadBeritaAcaraTerbaru() {
       tbody.innerHTML = `
         <tr>
           <td colspan="6" class="table-empty">
-            <div class="empty-icon">📋</div>
             <div class="empty-text">Belum ada berita acara</div>
           </td>
         </tr>`;
       return;
     }
+
+    const u = JSON.parse(localStorage.getItem('user')||'{}');
+    const isAdmin = u.role === 'admin';
 
     tbody.innerHTML = terbaru.map((ba) => `
       <tr>
@@ -209,9 +211,10 @@ async function loadBeritaAcaraTerbaru() {
         <td>${ba.pihak2?.nama || '-'}</td>
         <td>
           <div class="action-group">
-            <a href="berita-acara.html#detail-${ba.id}" class="btn btn-sm btn-ghost" title="Lihat detail">👁️</a>
+            <a href="berita-acara.html#detail-${ba.id}" class="btn btn-sm btn-ghost" title="Lihat detail">Detail</a>
             <button class="btn btn-sm btn-secondary"
-              onclick="downloadPDF('${ba.id}','${ba.nomor_surat}')" title="Download PDF">⬇️ PDF</button>
+              onclick="downloadPDF('${ba.id}','${ba.nomor_surat}')" title="Download PDF">PDF</button>
+            ${isAdmin ? `<button class="btn btn-sm btn-danger" onclick="hapusBeritaAcara('${ba.id}', '${escapeJs(ba.nomor_surat)}')">Hapus</button>` : ''}
           </div>
         </td>
       </tr>
@@ -221,6 +224,27 @@ async function loadBeritaAcaraTerbaru() {
       <div class="empty-text text-danger">Gagal memuat data</div></td></tr>`;
     showToast('Gagal memuat berita acara: ' + err.message, 'error');
   }
+}
+
+async function hapusBeritaAcara(id, nomorSurat) {
+  showModalHapus({
+    judul: 'Hapus Berita Acara',
+    nama: `Nomor Surat: ${nomorSurat}`,
+    sub: 'Tindakan ini juga akan menghapus data item koleksi dalam BA ini.',
+    onConfirm: async () => {
+      try {
+        const res = await API.deleteBeritaAcara(id);
+        if (res?.success) {
+          showToast('Berita Acara berhasil dihapus', 'success');
+          loadBeritaAcaraTerbaru();
+        } else {
+          showToast(res?.message || 'Gagal menghapus BA', 'error');
+        }
+      } catch (err) {
+        showToast('Error: ' + err.message, 'error');
+      }
+    }
+  });
 }
 
 // ── Aktivitas ──────────────────────────────────────────────────
@@ -239,7 +263,6 @@ async function loadAktivitas() {
 
     (resBA?.data ?? []).slice(0, 5).forEach((ba) => {
       activities.push({
-        icon: '📋',
         text: `Berita Acara <strong>${ba.nomor_surat}</strong> (${ba.jenis_ba}) dibuat`,
         time: ba.created_at,
       });
@@ -247,7 +270,6 @@ async function loadAktivitas() {
 
     (resKoleksi?.data?.data ?? []).forEach((k) => {
       activities.push({
-        icon: '🏺',
         text: `Koleksi <strong>${k.nama_koleksi}</strong> ditambahkan`,
         time: k.created_at,
       });
@@ -266,8 +288,8 @@ async function loadAktivitas() {
         ${top.map((a) => `
           <div class="timeline-item">
             <div class="timeline-content">
-              <div class="timeline-text">${a.icon} ${a.text}</div>
-              <div class="timeline-time">🕐 ${timeAgo(a.time)}</div>
+              <div class="timeline-text">${a.text}</div>
+              <div class="timeline-time">${timeAgo(a.time)}</div>
             </div>
           </div>
         `).join('')}

@@ -30,16 +30,16 @@ function updatePageMode() {
 
   if (isEditMode) {
     if (pageTitle) pageTitle.textContent = 'Edit Koleksi';
-    if (formTitle) formTitle.textContent = '✏️ Edit Data Koleksi';
-    if (btnSubmit) btnSubmit.textContent = 'Simpan Perubahan ▶';
+    if (formTitle) formTitle.textContent = 'Edit Data Koleksi';
+    if (btnSubmit) btnSubmit.textContent = 'Simpan Perubahan';
     if (breadcrumb) breadcrumb.innerHTML = `
       <a href="koleksi.html" style="color:var(--teks-sekunder);text-decoration:none">Koleksi</a>
       <span style="color:var(--teks-sekunder)"> / Edit Koleksi</span>
     `;
   } else {
     if (pageTitle) pageTitle.textContent = 'Tambah Koleksi';
-    if (formTitle) formTitle.textContent = '🏺 Registrasi Koleksi Baru';
-    if (btnSubmit) btnSubmit.textContent = 'Tambah Koleksi ▶';
+    if (formTitle) formTitle.textContent = 'Registrasi Koleksi Baru';
+    if (btnSubmit) btnSubmit.textContent = 'Tambah Koleksi';
   }
 }
 
@@ -116,7 +116,7 @@ function bindFormEvents() {
           : 'Koleksi berhasil ditambahkan!';
         showToast(msg, 'success');
 
-        btn.textContent = '✓ Berhasil!';
+        btn.textContent = 'Berhasil!';
         btn.style.background = '#16A34A';
 
         setTimeout(() => window.location.href = 'koleksi.html', 1500);

@@ -104,7 +104,6 @@ async function loadKoleksi() {
     if (list.length === 0) {
       tbody.innerHTML = `
         <tr><td colspan="7" class="table-empty">
-          <div class="empty-icon">🔍</div>
           <div class="empty-text">Tidak ada koleksi yang ditemukan</div>
         </td></tr>`;
     } else {
@@ -118,8 +117,8 @@ async function loadKoleksi() {
           <td>${k.lokasi_terkini || '-'}</td>
           <td>
             <div class="action-group">
-              <a href="input-koleksi.html?id=${k.id}" class="btn btn-sm btn-secondary" title="Edit">✏️</a>
-              <button class="btn btn-sm btn-danger" onclick="konfirmasiHapus('${k.id}','${escapeHtml(k.nama_koleksi)}','${escapeHtml(k.no_inventaris)}')" title="Hapus">🗑️</button>
+              <a href="input-koleksi.html?id=${k.id}" class="btn btn-sm btn-secondary" title="Edit">Edit</a>
+              <button class="btn btn-sm btn-danger" onclick="konfirmasiHapus('${k.id}','${escapeHtml(k.nama_koleksi)}','${escapeHtml(k.no_inventaris)}')" title="Hapus">Hapus</button>
             </div>
           </td>
         </tr>
@@ -129,7 +128,7 @@ async function loadKoleksi() {
     renderPagination();
   } catch (err) {
     tbody.innerHTML = `<tr><td colspan="7" class="table-empty">
-      <div class="empty-text text-danger">❌ ${err.message}</div></td></tr>`;
+      <div class="empty-text text-danger">${err.message}</div></td></tr>`;
     showToast('Gagal memuat koleksi: ' + err.message, 'error');
   }
 }

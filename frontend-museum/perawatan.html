@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Form Perawatan — Museum Aceh</title>
+  <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;0,700;1,400&family=Source+Sans+3:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/sidebar.css">
+  <style>
+    .checkbox-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 8px; }
+    .section-title { margin-top: 24px; margin-bottom: 12px; font-weight: bold; border-bottom: 1px solid var(--abu-border); padding-bottom: 4px; }
+  </style>
+</head>
+<body>
+<div class="app-layout">
+  <div class="sidebar-overlay"></div>
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="sidebar-system-label"><span>Sistem Inventaris</span></div>
+    </div>
+    <nav class="sidebar-nav">
+      <span class="nav-section-label">Menu Utama</span>
+      <a href="dashboard.html" class="nav-item"><span class="nav-text">Dashboard</span></a>
+      <a href="koleksi.html" class="nav-item"><span class="nav-text">Data Koleksi</span></a>
+      <a href="berita-acara.html" class="nav-item"><span class="nav-text">Cetak BA</span></a>
+      <a href="status-pinjam.html" class="nav-item"><span class="nav-text">📦 Status Pinjam</span></a>
+      <a href="perawatan.html" class="nav-item active"><span class="nav-text">📄 Form Perawatan</span></a>
+    </nav>
+  </aside>
+
+  <main class="main-content">
+    <header class="topbar">
+      <div class="topbar-left">
+        <h1 class="page-title">Form Perawatan Lampiran BA</h1>
+      </div>
+      <div class="topbar-right">
+        <button onclick="logout()" class="btn-logout">Keluar</button>
+      </div>
+    </header>
+
+    <div class="page-content">
+      <div class="card" style="margin-bottom: 20px;">
+        <div class="card-header"><h3 class="card-title">Buat Form Perawatan Baru</h3></div>
+        <div class="card-body">
+          <form id="form-perawatan">
+            <div class="form-group row">
+              <div class="col-6">
+                <label>Kode Perawatan</label>
+                <input type="text" id="kode_perawatan" class="form-control" required placeholder="Contoh: NO.PK 123/2026">
+              </div>
+              <div class="col-6">
+                <label>Berita Acara Terkait</label>
+                <select id="ba_id" class="form-control" required>
+                  <option value="">— Memuat BA... —</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="section-title">Seksi I: Identifikasi Koleksi</div>
+            <div class="form-group row">
+              <div class="col-4">
+                <label>Asal Koleksi</label>
+                <select id="asal_koleksi" class="form-control">
+                  <option value="">Pilih Asal...</option>
+                  <option value="Storage">Storage</option>
+                  <option value="Ruang Pamer">Ruang Pamer</option>
+                  <option value="RA">RA</option>
+                </select>
+              </div>
+              <div class="col-4">
+                <label>Jenis Koleksi</label>
+                <select id="jenis_bahan" class="form-control">
+                  <option value="Organik">Organik</option>
+                  <option value="Anorganik">Anorganik</option>
+                </select>
+              </div>
+              <div class="col-4">
+                <label>Klasifikasi</label>
+                <select id="klasifikasi_koleksi" class="form-control">
+                  <option value="Biologika">Biologika</option>
+                  <option value="Etnografika">Etnografika</option>
+                  <option value="Geologika">Geologika</option>
+                  <option value="Seni Rupa">Seni Rupa</option>
+                  <option value="Lainnya">Lainnya</option>
+                </select>
+              </div>
+            </div>
+            
+            <label>Material Bahan</label>
+            <div class="checkbox-grid" id="material_bahan">
+              <label><input type="checkbox" value="Batu"> Batu</label>
+              <label><input type="checkbox" value="Kulit"> Kulit</label>
+              <label><input type="checkbox" value="Kayu"> Kayu</label>
+              <label><input type="checkbox" value="Logam"> Logam</label>
+              <label><input type="checkbox" value="Kertas"> Kertas</label>
+              <label><input type="checkbox" value="Tekstil"> Tekstil</label>
+            </div>
+
+            <div class="section-title">Seksi II: Kondisi Koleksi</div>
+            <div class="form-group row">
+              <div class="col-6">
+                <label>Kondisi</label>
+                <div class="checkbox-grid" id="kondisi_koleksi">
+                  <label><input type="checkbox" value="Polutan/debu"> Polutan</label>
+                  <label><input type="checkbox" value="Jamur"> Jamur</label>
+                  <label><input type="checkbox" value="Lembab"> Lembab</label>
+                  <label><input type="checkbox" value="Sompel"> Sompel</label>
+                  <label><input type="checkbox" value="Robek"> Robek</label>
+                </div>
+              </div>
+              <div class="col-6">
+                <label>Faktor Kerusakan</label>
+                <div class="checkbox-grid" id="faktor_kerusakan">
+                  <label><input type="checkbox" value="Cahaya"> Cahaya</label>
+                  <label><input type="checkbox" value="Suhu"> Suhu</label>
+                  <label><input type="checkbox" value="Debu"> Debu</label>
+                  <label><input type="checkbox" value="Kelembaban"> Kelembaban</label>
+                </div>
+              </div>
+            </div>
+
+            <div class="section-title">Seksi III: Metode & Bahan</div>
+            <div class="form-group row">
+              <div class="col-4">
+                <label>Teknis Penanganan</label>
+                <select id="teknis_penanganan" class="form-control"><option value="Basah">Basah</option><option value="Kering">Kering</option></select>
+              </div>
+              <div class="col-4">
+                <label>Metode Perawatan</label>
+                <select id="metode_perawatan" class="form-control"><option value="Preventif">Preventif</option><option value="Kuratif">Kuratif</option></select>
+              </div>
+              <div class="col-4">
+                <label>Metode Bahan</label>
+                <select id="metode_bahan" class="form-control"><option value="Kimia">Kimia</option><option value="Alami">Alami</option></select>
+              </div>
+            </div>
+
+            <label>Alat Digunakan</label>
+            <div class="checkbox-grid" id="alat_digunakan">
+              <label><input type="checkbox" value="Kuas"> Kuas</label><label><input type="checkbox" value="Pinset"> Pinset</label>
+              <label><input type="checkbox" value="Spons"> Spons</label>
+            </div>
+
+            <label style="margin-top: 10px;">Bahan Digunakan</label>
+            <div class="checkbox-grid" id="bahan_digunakan">
+              <label><input type="checkbox" value="Aquades"> Aquades</label><label><input type="checkbox" value="Alkohol"> Alkohol</label>
+              <label><input type="checkbox" value="Kapas"> Kapas</label>
+            </div>
+
+            <div class="section-title">TTD</div>
+            <div class="form-group row">
+              <div class="col-6">
+                <label>Petugas Konservasi</label>
+                <input type="text" id="petugas_konservasi" class="form-control" required>
+              </div>
+              <div class="col-6">
+                <label>Pendataan</label>
+                <input type="text" id="pendataan" class="form-control" required>
+              </div>
+            </div>
+
+            <div class="form-actions" style="margin-top: 20px;">
+              <button type="submit" class="btn btn-primary" id="btn-submit">Simpan & Cetak Form</button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header"><h3 class="card-title">Daftar Form Perawatan</h3></div>
+        <div class="table-wrapper">
+          <table class="table">
+            <thead><tr><th>Kode Perawatan</th><th>Tgl. BA</th><th>No. Surat BA</th><th>Petugas</th><th>Aksi</th></tr></thead>
+            <tbody id="tbody-forms"><tr><td colspan="5">Memuat...</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+<script src="js/api.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/perawatan.js"></script>
+</body>
+</html>

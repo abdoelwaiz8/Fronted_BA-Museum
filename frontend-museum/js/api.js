@@ -90,7 +90,101 @@ const API = {
   getBeritaAcara:     ()       => apiFetch('/berita-acara'),
   getBeritaAcaraById: (id)     => apiFetch(`/berita-acara/${id}`),
   createBeritaAcara:  (body)   => apiFetch('/berita-acara', { method: 'POST', body: JSON.stringify(body) }),
+  deleteBeritaAcara:  (id)     => apiFetch(`/berita-acara/${id}`, { method: 'DELETE' }),
+  getStatusPinjam:    ()       => apiFetch('/berita-acara/status-pinjam'),
+
+  // Perawatan
+  getPerawatan: (params = {}) => {
+    const qs = new URLSearchParams(
+      Object.fromEntries(
+        Object.entries(params).filter(([, v]) => v !== '' && v !== null && v !== undefined)
+      )
+    ).toString();
+    return apiFetch(`/perawatan${qs ? '?' + qs : ''}`);
+  },
+  getPerawatanBaAvailable: ()  => apiFetch('/perawatan/ba-available'),
+  getPerawatanById: (id)       => apiFetch(`/perawatan/${id}`),
+  createPerawatan:  (body)     => apiFetch('/perawatan', { method: 'POST', body: JSON.stringify(body) }),
+  updatePerawatan:  (id, body) => apiFetch(`/perawatan/${id}`, { method: 'PUT', body: JSON.stringify(body) }),
+  deletePerawatan:  (id)       => apiFetch(`/perawatan/${id}`, { method: 'DELETE' }),
 };
+
+// ── Download Perawatan Form PDF (Halaman 1) ────────────────────
+async function downloadPerawatanPdf(id, kode) {
+  try {
+    const res = await fetch(`${BASE_URL}/perawatan/${id}/pdf`, {
+      headers: {
+        'Authorization': `Bearer ${getToken()}`,
+        'ngrok-skip-browser-warning': 'true'
+      }
+    });
+    if (!res.ok) throw new Error(`Status ${res.status}`);
+    const blob = await res.blob();
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+    a.href     = url;
+    a.download = `FormPerawatan_${(kode || 'PK').replace(/\//g, '-')}.pdf`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    showToast('PDF Form Perawatan berhasil diunduh!', 'success');
+  } catch (err) {
+    showToast('Gagal mengunduh PDF: ' + err.message, 'error');
+  }
+}
+
+// ── Download Lampiran BA PDF (Halaman 2) ───────────────────────
+async function downloadLampiranBAPdf(idBa, nomorSurat) {
+  try {
+    const res = await fetch(`${BASE_URL}/perawatan/lampiran/ba/${idBa}/pdf`, {
+      headers: {
+        'Authorization': `Bearer ${getToken()}`,
+        'ngrok-skip-browser-warning': 'true'
+      }
+    });
+    if (!res.ok) throw new Error(`Status ${res.status}`);
+    const blob = await res.blob();
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+    a.href     = url;
+    a.download = `Lampiran_BA_${(nomorSurat || 'BA').replace(/\//g, '-')}.pdf`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    showToast('PDF Lampiran berhasil diunduh!', 'success');
+  } catch (err) {
+    showToast('Gagal mengunduh PDF lampiran: ' + err.message, 'error');
+  }
+}
+
+// ── Download Laporan Bulanan PDF ───────────────────────────────
+async function downloadLaporanPdf(bulan, tahun, kepala_nama, kepala_nip, konservator_nama, konservator_nip) {
+  const params = new URLSearchParams({ bulan, tahun, kepala_nama, kepala_nip, konservator_nama, konservator_nip });
+  try {
+    const res = await fetch(
+      `${BASE_URL}/perawatan/laporan/pdf?${params}`,
+      { headers: {
+          'Authorization': `Bearer ${getToken()}`,
+          'ngrok-skip-browser-warning': 'true'
+      }}
+    );
+    if (!res.ok) throw new Error(`Status ${res.status}`);
+    const blob = await res.blob();
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+    a.href     = url;
+    a.download = `Laporan_Perawatan_${bulan}_${tahun}.pdf`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    showToast('Laporan berhasil diunduh!', 'success');
+  } catch (err) {
+    showToast('Gagal mengunduh laporan: ' + err.message, 'error');
+  }
+}
 
 // ── Toast ──────────────────────────────────────────────────────
 
@@ -106,11 +200,9 @@ function getToastContainer() {
 }
 
 function showToast(message, type = 'success') {
-  const icons = { success: '✅', error: '❌', warning: '⚠️', info: 'ℹ️' };
   const toast = document.createElement('div');
   toast.className = `toast toast-${type}`;
   toast.innerHTML = `
-    <span class="toast-icon">${icons[type] || '💬'}</span>
     <span class="toast-message">${message}</span>
     <button class="toast-dismiss" onclick="this.parentElement.remove()">✕</button>
   `;
@@ -134,7 +226,6 @@ function showModalHapus({ judul, nama, sub = null, onConfirm }) {
     <div class="modal" style="max-width:420px">
       <div class="modal-header">
         <div style="display:flex;align-items:center;gap:10px">
-          <span style="font-size:22px">🗑️</span>
           <span class="modal-title" style="color:var(--merah-bahaya)">${judul || 'Hapus Data?'}</span>
         </div>
         <button class="modal-close" onclick="document.getElementById('modal-hapus').remove()">✕</button>
@@ -144,7 +235,7 @@ function showModalHapus({ judul, nama, sub = null, onConfirm }) {
           <div class="delete-nama">${nama}</div>
           ${sub ? `<div class="delete-sub">${sub}</div>` : ''}
         </div>
-        <div class="delete-warning"><span>⚠️</span><span>Tindakan ini tidak dapat dibatalkan.</span></div>
+        <div class="delete-warning"><span>Tindakan ini tidak dapat dibatalkan.</span></div>
       </div>
       <div class="modal-footer">
         <button class="btn btn-ghost" onclick="document.getElementById('modal-hapus').remove()">Batal</button>

@@ -187,14 +187,14 @@ function openKoleksiModal() {
     <div class="modal" style="max-width:660px;display:flex;flex-direction:column;max-height:90vh">
       <div class="modal-header" style="flex-shrink:0">
         <div style="display:flex;align-items:center;gap:10px">
-          <h3 class="modal-title">🏺 Cari Koleksi</h3>
+          <h3 class="modal-title">Cari Koleksi</h3>
           <span id="picker-count-badge" class="item-count-badge" style="display:none;background:var(--hijau-sukses)">0 dipilih</span>
         </div>
         <button class="modal-close" onclick="closeKoleksiModal()">✕</button>
       </div>
       <div style="padding:14px 24px 0;flex-shrink:0">
         <div class="input-wrapper" style="margin-bottom:6px">
-          <span class="input-icon">🔍</span>
+          <span class="input-icon" style="font-style:normal;font-size:11px;">Cari</span>
           <input type="text" id="search-koleksi-picker" class="form-control"
             placeholder="Cari nama koleksi atau no. inventaris..." style="padding-left:36px" autocomplete="off">
         </div>
@@ -243,7 +243,7 @@ function updatePickerFooter() {
 async function searchKoleksiForPicker(q) {
   const container = document.getElementById('picker-results');
   if (!container) return;
-  container.innerHTML = `<p class="text-muted text-sm text-center" style="padding:20px">🔍 Mencari...</p>`;
+  container.innerHTML = `<p class="text-muted text-sm text-center" style="padding:20px">Mencari...</p>`;
   try {
     const res  = await API.getKoleksi({ q, limit: 30 });
     const list = res?.data?.data ?? [];
@@ -257,7 +257,7 @@ async function searchKoleksiForPicker(q) {
       el.addEventListener('mouseleave', () => el.style.background = '');
     });
   } catch (err) {
-    container.innerHTML = `<p class="text-danger text-sm text-center" style="padding:20px">❌ ${err.message}</p>`;
+    container.innerHTML = `<p class="text-danger text-sm text-center" style="padding:20px">${err.message}</p>`;
   }
 }
 
@@ -268,7 +268,7 @@ function renderPickerItem(k) {
          display:flex;align-items:center;justify-content:space-between;gap:10px;border-radius:4px">
       <div style="flex:1;min-width:0">
         <div style="font-weight:700;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${k.nama_koleksi}</div>
-        <div style="font-size:11px;color:var(--teks-sekunder);margin-top:1px">📋 <code>${k.no_inventaris}</code> · ${k.jenis_koleksi||'-'}</div>
+        <div style="font-size:11px;color:var(--teks-sekunder);margin-top:1px"><code>${k.no_inventaris}</code> · ${k.jenis_koleksi||'-'}</div>
       </div>
       <div style="display:flex;align-items:center;gap:8px;flex-shrink:0">
         ${getBadgeKondisi(k.kondisi_terkini)}
@@ -296,7 +296,7 @@ function addKoleksiToBA(id, noInv, nama, jenis, kondisi) {
   }
   updatePickerFooter();
   renderSelectedItems();
-  showToast(`✅ "${nama}" ditambahkan`, 'success');
+  showToast(`"${nama}" ditambahkan`, 'success');
 }
 
 // ── Render item terpilih ───────────────────────────────────────
@@ -307,7 +307,7 @@ function renderSelectedItems() {
   if (!container) return;
 
   if (selectedItems.length === 0) {
-    container.innerHTML = `<div class="empty-items"><div style="font-size:28px;margin-bottom:6px">📦</div>Belum ada koleksi dipilih</div>`;
+    container.innerHTML = `<div class="empty-items">Belum ada koleksi dipilih</div>`;
     return;
   }
 
@@ -315,13 +315,13 @@ function renderSelectedItems() {
     <div class="item-row-grid">
       <div>
         <div class="item-nama">${item.koleksi.nama_koleksi}</div>
-        <div class="item-inv">📋 ${item.koleksi.no_inventaris} · ${item.koleksi.jenis_koleksi || '-'}</div>
+        <div class="item-inv">${item.koleksi.no_inventaris} · ${item.koleksi.jenis_koleksi || '-'}</div>
         <div class="kondisi-split">
           <select class="filter-control" style="font-size:12px;padding:4px 6px"
             onchange="updateKondisiKategori(${i}, this.value)">
-            <option value="Baik"         ${item.kondisi_kategori==='Baik'         ?'selected':''}>✅ Baik</option>
-            <option value="Rusak Ringan" ${item.kondisi_kategori==='Rusak Ringan' ?'selected':''}>⚠️ Rusak Ringan</option>
-            <option value="Rusak Berat"  ${item.kondisi_kategori==='Rusak Berat'  ?'selected':''}>🔴 Rusak Berat</option>
+            <option value="Baik"         ${item.kondisi_kategori==='Baik'         ?'selected':''}>Baik</option>
+            <option value="Rusak Ringan" ${item.kondisi_kategori==='Rusak Ringan' ?'selected':''}>Rusak Ringan</option>
+            <option value="Rusak Berat"  ${item.kondisi_kategori==='Rusak Berat'  ?'selected':''}>Rusak Berat</option>
           </select>
           <input type="text" id="kondisi-detail-${i}"
             class="kondisi-detail-input ${item.kondisi_kategori !== 'Baik' ? 'visible' : ''}"
@@ -356,9 +356,12 @@ async function loadBeritaAcaraList() {
     const res  = await API.getBeritaAcara();
     const list = res?.data ?? [];
     if (list.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="5" class="table-empty"><div class="empty-icon">📋</div><div class="empty-text">Belum ada Berita Acara</div></td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="5" class="table-empty"><div class="empty-text">Belum ada Berita Acara</div></td></tr>`;
       return;
     }
+    const u = JSON.parse(localStorage.getItem('user')||'{}');
+    const isAdmin = u.role === 'admin';
+
     tbody.innerHTML = list.map(ba => `
       <tr>
         <td><strong style="font-size:13px">${ba.nomor_surat || '-'}</strong></td>
@@ -367,14 +370,37 @@ async function loadBeritaAcaraList() {
         <td>${ba.pihak1?.nama || '-'}</td>
         <td>
           <div class="action-group">
-            <button class="btn btn-sm btn-ghost" onclick="openDetailModal('${ba.id}')" title="Detail">👁️</button>
-            <button class="btn btn-sm btn-secondary" onclick="downloadPDF('${ba.id}','${ba.nomor_surat}')" title="Download">⬇️</button>
+            <button class="btn btn-sm btn-ghost" onclick="openDetailModal('${ba.id}')" title="Detail">Detail</button>
+            <button class="btn btn-sm btn-secondary" onclick="downloadPDF('${ba.id}','${ba.nomor_surat}')" title="Download BA">Download</button>
+            <button class="btn btn-sm btn-ghost" onclick="downloadLampiranBAPdf('${ba.id}','${ba.nomor_surat}')" title="Cetak Lampiran Perawatan">Lampiran</button>
+            ${isAdmin ? `<button class="btn btn-sm btn-danger" onclick="hapusBeritaAcara('${ba.id}', '${escapeJs(ba.nomor_surat)}')">Hapus</button>` : ''}
           </div>
         </td>
       </tr>`).join('');
   } catch {
     tbody.innerHTML = `<tr><td colspan="5" class="table-empty"><div class="empty-text text-danger">Gagal memuat data</div></td></tr>`;
   }
+}
+
+async function hapusBeritaAcara(id, nomorSurat) {
+  showModalHapus({
+    judul: 'Hapus Berita Acara',
+    nama: `Nomor Surat: ${nomorSurat}`,
+    sub: 'Tindakan ini juga akan menghapus data item koleksi dalam BA ini.',
+    onConfirm: async () => {
+      try {
+        const res = await API.deleteBeritaAcara(id);
+        if (res?.success) {
+          showToast('Berita Acara berhasil dihapus', 'success');
+          loadBeritaAcaraList();
+        } else {
+          showToast(res?.message || 'Gagal menghapus BA', 'error');
+        }
+      } catch (err) {
+        showToast('Error: ' + err.message, 'error');
+      }
+    }
+  });
 }
 
 // ── Detail Modal ───────────────────────────────────────────────
@@ -386,7 +412,7 @@ async function openDetailModal(id) {
   modal.innerHTML = `
     <div class="modal" style="max-width:700px">
       <div class="modal-header">
-        <h3 class="modal-title">📋 Detail Berita Acara</h3>
+        <h3 class="modal-title">Detail Berita Acara</h3>
         <button class="modal-close" onclick="document.getElementById('modal-detail-ba').remove()">✕</button>
       </div>
       <div class="modal-body" id="modal-detail-content">
@@ -439,9 +465,9 @@ async function openDetailModal(id) {
       </div>`;
     document.getElementById('modal-detail-footer').innerHTML = `
       <button class="btn btn-ghost" onclick="document.getElementById('modal-detail-ba').remove()">Tutup</button>
-      <button class="btn btn-primary" onclick="downloadPDF('${ba.id}','${ba.nomor_surat}')">⬇️ Download PDF</button>`;
+      <button class="btn btn-primary" onclick="downloadPDF('${ba.id}','${ba.nomor_surat}')">Download PDF</button>`;
   } catch (err) {
-    document.getElementById('modal-detail-content').innerHTML = `<div class="alert alert-error">❌ ${err.message}</div>`;
+    document.getElementById('modal-detail-content').innerHTML = `<div class="alert alert-error">${err.message}</div>`;
   }
 }
 
