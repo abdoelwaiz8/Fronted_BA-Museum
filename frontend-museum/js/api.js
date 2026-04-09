@@ -91,7 +91,6 @@ const API = {
   getBeritaAcaraById: (id)     => apiFetch(`/berita-acara/${id}`),
   createBeritaAcara:  (body)   => apiFetch('/berita-acara', { method: 'POST', body: JSON.stringify(body) }),
   deleteBeritaAcara:  (id)     => apiFetch(`/berita-acara/${id}`, { method: 'DELETE' }),
-  getStatusPinjam:    ()       => apiFetch('/berita-acara/status-pinjam'),
 
   // Perawatan
   getPerawatan: (params = {}) => {
@@ -287,6 +286,9 @@ function debounce(fn, delay = 400) {
   let timer;
   return (...args) => { clearTimeout(timer); timer = setTimeout(() => fn(...args), delay); };
 }
+
+function escapeJs(s) { return (s||'').replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/"/g,'\\"').replace(/\n/g,' '); }
+function escapeHtmlAttr(s) { return (s||'').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
 function skeletonRows(count = 5, cols = 6) {
   return Array(count).fill(0).map(() =>

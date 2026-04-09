@@ -1,16 +1,274 @@
 requireAuth();
 
+/* ============================================================
+   Museum Aceh — berita-acara.js
+   Fitur Draft: otomatis tersimpan ke localStorage,
+   bertahan setelah logout, bisa dilanjutkan kapan saja.
+   ============================================================ */
+
+const DRAFT_KEY    = 'museum_ba_draft';
+const AUTOSAVE_MS  = 1200; // debounce autosave
+
 let staffList     = [];
 let selectedItems = [];
 let lampiranAktif = false;
+let autosaveTimer = null;
+let draftLoaded   = false;
 
+// ── Init ───────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', async () => {
   renderUserInfo();
   await Promise.all([loadStaff(), loadBeritaAcaraList()]);
   bindFormEvents();
+  bindDraftEvents();
+  checkAndShowDraft();
 });
 
-// ── Load Staff ─────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════
+//  DRAFT SYSTEM
+// ═══════════════════════════════════════════════════════════════
+
+/** Kumpulkan semua data form saat ini ke objek draft */
+function collectDraftData() {
+  const p2IsExt = document.getElementById('toggle-p2-ext')?.checked || false;
+  const s2IsExt = document.getElementById('toggle-s2-ext')?.checked || false;
+  const lampiranOn = document.getElementById('toggle-lampiran')?.checked || false;
+
+  return {
+    savedAt: new Date().toISOString(),
+    form: {
+      nomor_surat:          getValue('nomor_surat'),
+      jenis_ba:             getValue('jenis_ba'),
+      tanggal_serah_terima: getValue('tanggal_serah_terima'),
+      pihak_pertama_id:     getValue('pihak_pertama_id'),
+      toggle_p2_ext:        p2IsExt,
+      pihak_kedua_id:       getValue('pihak_kedua_id'),
+      p2_ext_nama:          getValue('p2_ext_nama'),
+      p2_ext_nip:           getValue('p2_ext_nip'),
+      p2_ext_jabatan:       getValue('p2_ext_jabatan'),
+      p2_ext_alamat:        getValue('p2_ext_alamat'),
+      saksi1_id:            getValue('saksi1_id'),
+      toggle_s2_ext:        s2IsExt,
+      saksi2_id:            getValue('saksi2_id'),
+      s2_ext_nama:          getValue('s2_ext_nama'),
+      s2_ext_nip:           getValue('s2_ext_nip'),
+      s2_ext_jabatan:       getValue('s2_ext_jabatan'),
+      toggle_lampiran:      lampiranOn,
+      lokasi_tujuan_global: getValue('lokasi_tujuan_global'),
+    },
+    selectedItems: selectedItems.map(item => ({ ...item })),
+  };
+}
+
+/** Cek apakah draft punya isian berarti */
+function isDraftMeaningful(draft) {
+  if (!draft || !draft.form) return false;
+  const f = draft.form;
+  return !!(
+    f.nomor_surat || f.jenis_ba || f.tanggal_serah_terima ||
+    f.pihak_pertama_id || f.pihak_kedua_id || f.p2_ext_nama ||
+    (draft.selectedItems && draft.selectedItems.length > 0)
+  );
+}
+
+/** Simpan draft ke localStorage */
+function saveDraft() {
+  const data = collectDraftData();
+  if (!isDraftMeaningful(data)) return; // jangan simpan jika kosong
+  try {
+    localStorage.setItem(DRAFT_KEY, JSON.stringify(data));
+    updateDraftBanner('saved');
+  } catch (e) {
+    console.warn('Gagal menyimpan draft:', e);
+  }
+}
+
+/** Load draft dari localStorage */
+function loadDraft() {
+  try {
+    const raw = localStorage.getItem(DRAFT_KEY);
+    if (!raw) return null;
+    return JSON.parse(raw);
+  } catch {
+    return null;
+  }
+}
+
+/** Hapus draft */
+function clearDraft() {
+  localStorage.removeItem(DRAFT_KEY);
+  hideDraftBanner();
+}
+
+/** Autosave dengan debounce */
+function scheduleAutosave() {
+  if (autosaveTimer) clearTimeout(autosaveTimer);
+  autosaveTimer = setTimeout(() => {
+    saveDraft();
+  }, AUTOSAVE_MS);
+}
+
+// ── Banner UI ──────────────────────────────────────────────────
+
+function checkAndShowDraft() {
+  const draft = loadDraft();
+  if (!isDraftMeaningful(draft)) return;
+  showDraftRestoreBanner(draft);
+}
+
+function showDraftRestoreBanner(draft) {
+  const banner = document.getElementById('draft-banner');
+  if (!banner) return;
+
+  const savedAt = draft.savedAt
+    ? new Date(draft.savedAt).toLocaleString('id-ID', {
+        day: '2-digit', month: 'short', year: 'numeric',
+        hour: '2-digit', minute: '2-digit'
+      })
+    : '—';
+
+  const itemCount = draft.selectedItems?.length || 0;
+  const nomorSurat = draft.form?.nomor_surat || '(belum diisi)';
+
+  document.getElementById('draft-info-nomor').textContent  = nomorSurat;
+  document.getElementById('draft-info-waktu').textContent  = savedAt;
+  document.getElementById('draft-info-items').textContent  =
+    itemCount > 0 ? `${itemCount} koleksi` : 'Tidak ada koleksi';
+
+  banner.style.display = 'block';
+  banner.classList.add('draft-animate-in');
+}
+
+function hideDraftBanner() {
+  const banner = document.getElementById('draft-banner');
+  if (banner) banner.style.display = 'none';
+}
+
+function updateDraftBanner(status) {
+  const statusEl = document.getElementById('draft-status');
+  if (!statusEl) return;
+  if (status === 'saved') {
+    const now = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+    statusEl.textContent = `Tersimpan otomatis pukul ${now}`;
+    statusEl.style.color = 'var(--hijau-sukses)';
+    // Fade back to normal
+    setTimeout(() => {
+      if (statusEl) statusEl.style.color = 'var(--teks-sekunder)';
+    }, 3000);
+  }
+}
+
+/** Terapkan data draft ke form */
+function applyDraftToForm(draft) {
+  if (!draft || !draft.form) return;
+  const f = draft.form;
+
+  setInputValue('nomor_surat',          f.nomor_surat);
+  setInputValue('jenis_ba',             f.jenis_ba);
+  setInputValue('tanggal_serah_terima', f.tanggal_serah_terima);
+
+  // Staff dropdowns mungkin belum terisi saat ini dipanggil
+  // Kita jadwalkan sedikit delay agar options sudah ada
+  setTimeout(() => {
+    setInputValue('pihak_pertama_id', f.pihak_pertama_id);
+    setInputValue('pihak_kedua_id',   f.pihak_kedua_id);
+    setInputValue('saksi1_id',        f.saksi1_id);
+    setInputValue('saksi2_id',        f.saksi2_id);
+  }, 300);
+
+  // Toggle pihak kedua eksternal
+  const toggleP2 = document.getElementById('toggle-p2-ext');
+  if (toggleP2 && f.toggle_p2_ext) {
+    toggleP2.checked = true;
+    document.getElementById('p2-internal').style.display = 'none';
+    document.getElementById('p2-external').style.display = 'block';
+  }
+  setInputValue('p2_ext_nama',    f.p2_ext_nama);
+  setInputValue('p2_ext_nip',     f.p2_ext_nip);
+  setInputValue('p2_ext_jabatan', f.p2_ext_jabatan);
+  setInputValue('p2_ext_alamat',  f.p2_ext_alamat);
+
+  // Toggle saksi kedua eksternal
+  const toggleS2 = document.getElementById('toggle-s2-ext');
+  if (toggleS2 && f.toggle_s2_ext) {
+    toggleS2.checked = true;
+    document.getElementById('s2-internal').style.display = 'none';
+    document.getElementById('s2-external').style.display = 'block';
+  }
+  setInputValue('s2_ext_nama',    f.s2_ext_nama);
+  setInputValue('s2_ext_nip',     f.s2_ext_nip);
+  setInputValue('s2_ext_jabatan', f.s2_ext_jabatan);
+
+  // Toggle lampiran
+  const toggleLampiran = document.getElementById('toggle-lampiran');
+  if (toggleLampiran && f.toggle_lampiran) {
+    toggleLampiran.checked = true;
+    lampiranAktif = true;
+    document.getElementById('lampiran-section').style.display = 'block';
+  }
+  setInputValue('lokasi_tujuan_global', f.lokasi_tujuan_global);
+
+  // Restore selected items
+  if (Array.isArray(draft.selectedItems) && draft.selectedItems.length > 0) {
+    selectedItems = draft.selectedItems.map(item => ({ ...item }));
+    renderSelectedItems();
+  }
+
+  draftLoaded = true;
+  showToast('Draft berhasil dipulihkan!', 'success');
+
+  // Ganti banner ke mode "aktif"
+  const banner = document.getElementById('draft-banner');
+  if (banner) {
+    banner.classList.add('draft-active');
+    document.getElementById('draft-restore-actions').style.display = 'none';
+    document.getElementById('draft-active-indicator').style.display = 'flex';
+  }
+}
+
+function setInputValue(id, value) {
+  if (!value && value !== 0) return;
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.value = value;
+}
+
+// ── Draft Banner Event Bindings ────────────────────────────────
+function bindDraftEvents() {
+  // Tombol pulihkan
+  document.getElementById('btn-draft-restore')?.addEventListener('click', () => {
+    const draft = loadDraft();
+    if (draft) applyDraftToForm(draft);
+  });
+
+  // Tombol buang draft
+  document.getElementById('btn-draft-discard')?.addEventListener('click', () => {
+    if (confirm('Yakin ingin membuang draft ini? Semua isian yang tersimpan akan dihapus.')) {
+      clearDraft();
+      showToast('Draft dihapus.', 'success');
+    }
+  });
+
+  // Tombol hapus draft saat sedang mengisi
+  document.getElementById('btn-draft-clear')?.addEventListener('click', () => {
+    if (confirm('Yakin ingin menghapus draft? Progress yang belum disimpan akan hilang.')) {
+      clearDraft();
+      showToast('Draft dihapus.', 'success');
+    }
+  });
+
+  // Autosave: pantau semua perubahan pada form
+  const formEl = document.getElementById('form-ba');
+  if (formEl) {
+    formEl.addEventListener('input',  scheduleAutosave);
+    formEl.addEventListener('change', scheduleAutosave);
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  STAFF & FORM
+// ═══════════════════════════════════════════════════════════════
+
 async function loadStaff() {
   try {
     const res = await API.getStaff({ limit: 1000 });
@@ -36,9 +294,21 @@ function populateStaffDropdowns() {
     const el = document.getElementById(id);
     if (el) el.innerHTML = saksiOpts;
   });
+
+  // Setelah staff dimuat, pulihkan nilai dari draft jika ada
+  const draft = loadDraft();
+  if (draft && isDraftMeaningful(draft) && !draftLoaded) {
+    // Hanya auto-apply nilai dropdown, bukan full restore (itu tombol manual)
+    setTimeout(() => {
+      setInputValue('pihak_pertama_id', draft.form?.pihak_pertama_id);
+      setInputValue('pihak_kedua_id',   draft.form?.pihak_kedua_id);
+      setInputValue('saksi1_id',        draft.form?.saksi1_id);
+      setInputValue('saksi2_id',        draft.form?.saksi2_id);
+    }, 100);
+  }
 }
 
-// ── Bind Events ────────────────────────────────────────────────
+// ── Bind Form Events ───────────────────────────────────────────
 function bindFormEvents() {
   document.getElementById('form-ba')?.addEventListener('submit', e => { e.preventDefault(); submitBA(); });
 
@@ -46,6 +316,7 @@ function bindFormEvents() {
     lampiranAktif = e.target.checked;
     document.getElementById('lampiran-section').style.display = lampiranAktif ? 'block' : 'none';
     if (!lampiranAktif) { selectedItems = []; renderSelectedItems(); }
+    scheduleAutosave();
   });
 
   document.getElementById('btn-tambah-koleksi')?.addEventListener('click', openKoleksiModal);
@@ -54,12 +325,14 @@ function bindFormEvents() {
     const ext = e.target.checked;
     document.getElementById('p2-internal').style.display = ext ? 'none' : 'block';
     document.getElementById('p2-external').style.display = ext ? 'block' : 'none';
+    scheduleAutosave();
   });
 
   document.getElementById('toggle-s2-ext')?.addEventListener('change', e => {
     const ext = e.target.checked;
     document.getElementById('s2-internal').style.display = ext ? 'none' : 'block';
     document.getElementById('s2-external').style.display = ext ? 'block' : 'none';
+    scheduleAutosave();
   });
 }
 
@@ -110,6 +383,8 @@ async function submitBA() {
     const res = await API.createBeritaAcara(payload);
     if (res?.success) {
       showToast('Berita Acara berhasil dibuat!', 'success');
+      // Hapus draft setelah berhasil submit
+      clearDraft();
       if (res.data?.id) {
         setTimeout(() => {
           if (confirm('Download PDF sekarang?')) downloadPDF(res.data.id, payload.nomor_surat);
@@ -129,13 +404,14 @@ async function submitBA() {
 
 function resetForm() {
   document.getElementById('form-ba').reset();
-  selectedItems = []; lampiranAktif = false;
+  selectedItems = []; lampiranAktif = false; draftLoaded = false;
   document.getElementById('lampiran-section').style.display = 'none';
   document.getElementById('p2-internal').style.display = 'block';
   document.getElementById('p2-external').style.display = 'none';
   document.getElementById('s2-internal').style.display = 'block';
   document.getElementById('s2-external').style.display = 'none';
   renderSelectedItems();
+  hideDraftBanner();
 }
 
 // ── Validate ───────────────────────────────────────────────────
@@ -200,6 +476,9 @@ function openKoleksiModal() {
         </div>
         <p class="text-muted text-sm" style="padding-bottom:8px">
           Klik <strong>+ Tambah</strong> — modal tidak menutup sampai klik Selesai.
+          Koleksi tidak ditemukan? <a href="input-koleksi.html" target="_blank"
+            style="color:var(--merah-utama);font-weight:700;text-decoration:underline">
+            Tambah koleksi baru ↗</a>
         </p>
       </div>
       <div id="picker-results" style="flex:1;overflow-y:auto;padding:0 24px;min-height:180px;max-height:50vh">
@@ -228,7 +507,10 @@ function openKoleksiModal() {
   updatePickerFooter();
 }
 
-function closeKoleksiModal() { document.getElementById('modal-koleksi-picker')?.remove(); }
+function closeKoleksiModal() {
+  document.getElementById('modal-koleksi-picker')?.remove();
+  scheduleAutosave(); // simpan draft setelah tutup modal
+}
 
 function updatePickerFooter() {
   const c = selectedItems.length;
@@ -248,14 +530,16 @@ async function searchKoleksiForPicker(q) {
     const res  = await API.getKoleksi({ q, limit: 30 });
     const list = res?.data?.data ?? [];
     if (list.length === 0) {
-      container.innerHTML = `<p class="text-muted text-sm text-center" style="padding:20px">Tidak ditemukan untuk "<strong>${escapeJs(q)}</strong>"</p>`;
+      container.innerHTML = `
+        <div style="text-align:center;padding:28px">
+          <p class="text-muted text-sm" style="margin-bottom:10px">Tidak ditemukan untuk "<strong>${escapeJs(q)}</strong>"</p>
+          <a href="input-koleksi.html" target="_blank" class="btn btn-sm btn-primary" style="font-size:12px">
+            + Tambah Koleksi Baru ↗
+          </a>
+        </div>`;
       return;
     }
     container.innerHTML = list.map(k => renderPickerItem(k)).join('');
-    container.querySelectorAll('[id^="picker-item-"]').forEach(el => {
-      el.addEventListener('mouseenter', () => el.style.background = '#FEF2F2');
-      el.addEventListener('mouseleave', () => el.style.background = '');
-    });
   } catch (err) {
     container.innerHTML = `<p class="text-danger text-sm text-center" style="padding:20px">${err.message}</p>`;
   }
@@ -296,6 +580,7 @@ function addKoleksiToBA(id, noInv, nama, jenis, kondisi) {
   }
   updatePickerFooter();
   renderSelectedItems();
+  scheduleAutosave();
   showToast(`"${nama}" ditambahkan`, 'success');
 }
 
@@ -342,10 +627,19 @@ function updateKondisiKategori(idx, val) {
     if (val !== 'Baik') { el.classList.add('visible'); }
     else { el.classList.remove('visible'); el.value = ''; selectedItems[idx].kondisi_detail = ''; }
   }
+  scheduleAutosave();
 }
 
-function updateKondisiDetail(idx, val) { if (selectedItems[idx]) selectedItems[idx].kondisi_detail = val; }
-function removeItem(idx) { selectedItems.splice(idx, 1); renderSelectedItems(); }
+function updateKondisiDetail(idx, val) {
+  if (selectedItems[idx]) selectedItems[idx].kondisi_detail = val;
+  scheduleAutosave();
+}
+
+function removeItem(idx) {
+  selectedItems.splice(idx, 1);
+  renderSelectedItems();
+  scheduleAutosave();
+}
 
 // ── Load List BA ───────────────────────────────────────────────
 async function loadBeritaAcaraList() {
@@ -473,11 +767,13 @@ async function openDetailModal(id) {
 
 // ── Helpers ────────────────────────────────────────────────────
 function getValue(id) { const el = document.getElementById(id); return el ? el.value.trim() : ''; }
+
 function setLoading(btn, on) {
   if (!btn) return;
   btn.disabled = on;
   if (on) { btn.classList.add('loading'); btn.dataset.orig = btn.textContent; btn.textContent = 'Memproses...'; }
   else    { btn.classList.remove('loading'); btn.textContent = btn.dataset.orig || 'Cetak PDF'; }
 }
+
 function escapeJs(s) { return (s||'').replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/"/g,'\\"').replace(/\n/g,' '); }
 function escapeHtmlAttr(s) { return (s||'').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
