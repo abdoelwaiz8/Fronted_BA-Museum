@@ -39,6 +39,7 @@ function collectDraftData() {
     form: {
       nomor_surat:          getValue('nomor_surat'),
       jenis_ba:             getValue('jenis_ba'),
+      keperluan:            getValue('keperluan'),
       tanggal_serah_terima: getValue('tanggal_serah_terima'),
       pihak_pertama_id:     getValue('pihak_pertama_id'),
       toggle_p2_ext:        p2IsExt,
@@ -165,6 +166,7 @@ function applyDraftToForm(draft) {
 
   setInputValue('nomor_surat',          f.nomor_surat);
   setInputValue('jenis_ba',             f.jenis_ba);
+  setInputValue('keperluan',            f.keperluan);
   setInputValue('tanggal_serah_terima', f.tanggal_serah_terima);
 
   // Staff dropdowns mungkin belum terisi saat ini dipanggil
@@ -347,6 +349,7 @@ async function submitBA() {
   const payload = {
     nomor_surat:          getValue('nomor_surat'),
     jenis_ba:             getValue('jenis_ba'),
+    keperluan:            getValue('keperluan') || 'Konservasi',
     tanggal_serah_terima: getValue('tanggal_serah_terima'),
     pihak_pertama_id:     getValue('pihak_pertama_id'),
 
@@ -419,6 +422,7 @@ function validateBA() {
   const required = [
     { id: 'nomor_surat',          label: 'Nomor Surat' },
     { id: 'jenis_ba',             label: 'Jenis BA' },
+    { id: 'keperluan',            label: 'Keperluan' },
     { id: 'tanggal_serah_terima', label: 'Tanggal' },
     { id: 'pihak_pertama_id',     label: 'Pihak Pertama' },
   ];
